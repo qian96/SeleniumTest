@@ -20,7 +20,33 @@ public class TestCase {
     public List<HashMap<String,Object>> steps;
     private ChromeDriver driver;
     private WebElement currentElement;
+    public int index=0;
 
+    //取出data中的值
+    public List<TestCase> testCaseGenerate(){
+        List<TestCase> testCaseList = new ArrayList<>();
+        for (int i = 0; i < data.size(); i++) {
+            TestCase testCase = new TestCase();
+            testCase.index=i;
+            testCase.steps=steps;
+            testCase.data=data;
+            testCaseList.add(testCase);
+        }
+        return testCaseList;
+    }
+
+    public Object getValue(HashMap<String,Object> step,String key){
+        Object value = step.get(key);
+        if(value instanceof String){
+            //如果值是string类型进行替换
+          return ((String)value).replace("${data}",data.get(index));
+        }else {
+            return value;
+        }
+    }
+    public Object getValue(HashMap<String,Object> step,String key,Object defalutValur){
+       return step.getOrDefault(key,defalutValur);
+    }
 
     public void run(){
         steps.forEach(step->{
@@ -28,17 +54,26 @@ public class TestCase {
                 driver = new ChromeDriver();
             }
             if(step.keySet().contains("implicitly_wait")){
-                driver.manage().timeouts().implicitlyWait((int)step.getOrDefault("implicitly_wait",5),TimeUnit.SECONDS);
+                driver.manage().timeouts().implicitlyWait((int)getValue(step,"implicitly_wait",5),TimeUnit.SECONDS);
             }
+
             if(step.keySet().contains("get")){
-                driver.get(step.get("get").toString());
+                driver.get(getValue(step,"get").toString());
+            }
+            if(step.keySet().contains("sleep")){
+
+                try {
+                    Thread.sleep(Long.valueOf(getValue(step,"sleep").toString()));
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
             if(step.keySet().contains("quit")){
-                driver.quit();
+                //driver.quit();
             }
             if(step.keySet().contains("find")){
                 ArrayList<By> bys = new ArrayList<>();
-                ((HashMap<String,String>)step.get("find")).entrySet().forEach(stringStringEntry -> {
+                ((HashMap<String,String>)getValue(step,"find")).entrySet().forEach(stringStringEntry -> {
                     if(stringStringEntry.getKey().contains("id")){
                         bys.add(By.id(stringStringEntry.getValue()));
                     }
@@ -55,8 +90,7 @@ public class TestCase {
                 currentElement.click();
             }
             if(step.keySet().contains("send_keys")){
-                currentElement.sendKeys(step.get("send_keys").toString());
-                //currentElement.sendKeys("demo");
+                currentElement.sendKeys(getValue(step,"send_keys").toString());
             }
         });
     }

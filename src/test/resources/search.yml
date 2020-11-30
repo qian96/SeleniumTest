@@ -8,6 +8,7 @@ steps:
   - get: http://ceshiren.com
   - find: { id: search-button }
   - click: {}
+  - sleep: 3
   - find: { id: search-term }
-  - send_keys: {data}
+  - send_keys: ${data}
   - quit: {}
