@@ -1,0 +1,13 @@
+data:
+- demo1
+- demo2
+
+steps:
+  - chrome: {}
+  - implicitly_wait: 5
+  - get: http://ceshiren.com
+  - find: { id: search-button }
+  - click: {}
+  - find: { id: search-term }
+  - send_keys: {data}
+  - quit: {}
